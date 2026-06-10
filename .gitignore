@@ -8,6 +8,8 @@ __pycache__
 .DS_Store
 node_modules
 dist
+.netlify
+.env.netlify.local
 backend/package-lock.json
 backend/interview.db
 backend/data/chroma/*
