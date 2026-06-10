@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: role-rag-interviewer-api
+    runtime: docker
+    dockerContext: ./backend
+    dockerfilePath: ./backend/Dockerfile
+    plan: starter
+    healthCheckPath: /health
+    disk:
+      name: role-rag-data
+      mountPath: /app/data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:////app/data/interview.db
+      - key: CHROMA_DIR
+        value: /app/data/chroma
+      - key: UPLOAD_DIR
+        value: /app/data/uploads
+      - key: KB_DIR
+        value: /app/data/kb_docs
+      - key: EMBEDDING_PROVIDER
+        value: local
+      - key: EMBEDDING_MODEL
+        value: all-MiniLM-L6-v2
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: MAX_TURNS
+        value: 5
+      - key: CORS_ORIGINS
+        value: https://role-rag-interviewer-frontend.onrender.com
+      - key: OPENAI_API_KEY
+        sync: false
+
+  - type: web
+    name: role-rag-interviewer-frontend
+    runtime: static
+    rootDir: ./frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://role-rag-interviewer-api.onrender.com
