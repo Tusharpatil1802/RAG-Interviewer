@@ -6,12 +6,29 @@ from app.api.interview import router
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name)
-app.add_middleware(CORSMiddleware, allow_origins=[o.strip() for o in settings.cors_origins.split(',')], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[origin.strip() for origin in settings.cors_origins.split(",")],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(router)
+
 
 @app.on_event("startup")
 def startup():
     init_db()
+
+
+@app.get("/")
+def root():
+    return {
+        "message": "RoleRAG Interviewer API is running",
+        "docs": "/docs",
+        "health": "/health",
+    }
+
 
 @app.get("/health")
 def health():

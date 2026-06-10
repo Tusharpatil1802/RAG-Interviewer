@@ -25,7 +25,7 @@ The app is designed for AI/ML and backend-style screening flows where the first 
 - Frontend: `React`, `Vite`, `Axios`
 - Backend: `FastAPI`, `SQLAlchemy`, `Pydantic Settings`
 - Vector store: `ChromaDB`
-- Embeddings: `sentence-transformers/all-MiniLM-L6-v2`
+- Embeddings: local `sentence-transformers` by default, with optional OpenAI embeddings
 - File parsing: `pypdf`
 - Database: `SQLite`
 - LLM integration: `OpenAI` with local fallbacks when no API key is provided
@@ -78,11 +78,11 @@ Example:
 
 ```text
 backend/data/kb_docs/
-├── AI/ML Engineer/
+├── AI_ML_Engineer/
 │   └── ml_notes.pdf
-├── Backend Engineer/
+├── Backend_Engineer/
 │   └── backend_system_design.txt
-└── Data Science / Applied ML/
+└── Data_Science_Applied_ML/
     └── applied_ml_notes.md
 ```
 
@@ -98,10 +98,9 @@ Supported knowledge-base file types:
 
 ```bash
 cd backend
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+python3 -m venv venv
+venv/bin/python -m pip install -r requirements.txt
+venv/bin/python -m uvicorn app.main:app --reload
 ```
 
 The backend starts on `http://localhost:8000`.
@@ -128,7 +127,8 @@ DATABASE_URL=sqlite:///./interview.db
 CHROMA_DIR=./data/chroma
 UPLOAD_DIR=./data/uploads
 KB_DIR=./data/kb_docs
-EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+EMBEDDING_PROVIDER=local
+EMBEDDING_MODEL=all-MiniLM-L6-v2
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4o-mini
 CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000
@@ -137,15 +137,22 @@ MAX_TURNS=5
 
 ## OpenAI Usage
 
-`OPENAI_API_KEY` is optional.
+Local embeddings are the default development path and do not require OpenAI credits.
 
 When an API key is available, the app uses OpenAI for:
 
 - richer resume profile extraction
 - interview question generation
+- answer evaluation
 - final session summarization
 
-When no API key is present, the project still works using local fallback logic for resume parsing, question generation, evaluation, and summary generation.
+If you want hosted embeddings later, set:
+
+- `EMBEDDING_PROVIDER=openai`
+- `EMBEDDING_MODEL=text-embedding-3-small`
+- `OPENAI_API_KEY=...`
+
+When no API key is present, fallback logic still exists for resume parsing, question generation, evaluation, and summary generation, and the default local RAG retrieval flow continues to work.
 
 ## Ingest The Knowledge Base
 
@@ -160,6 +167,8 @@ Or ingest one role only:
 ```bash
 curl -X POST "http://localhost:8000/api/kb/ingest?role=AI/ML%20Engineer"
 ```
+
+If ingestion fails on the first local run, make sure the machine has internet access once so the sentence-transformer model can download and cache locally.
 
 ## API Endpoints
 
@@ -204,6 +213,12 @@ JSON body:
 
 ```http
 GET /api/interviews/{session_id}
+```
+
+### Download session PDF report
+
+```http
+GET /api/interviews/{session_id}/report.pdf
 ```
 
 ### Reset interview session

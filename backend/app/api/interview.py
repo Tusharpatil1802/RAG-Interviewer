@@ -8,7 +8,12 @@ from app.core.config import get_settings
 from app.models.db import get_db, InterviewSession, InterviewTurn
 from app.schemas.interview import AnswerRequest, AnswerResponse, StartInterviewResponse, SessionSummary
 from app.services.resume import extract_text_from_file, parse_resume
-from app.services.rag import build_queries, retrieve, ingest_knowledge_base
+from app.services.rag import (
+    EmbeddingConfigurationError,
+    build_queries,
+    retrieve,
+    ingest_knowledge_base,
+)
 from app.services.llm import generate_question, evaluate_answer, summarize_session
 from app.services.report import build_session_report_pdf
 
@@ -22,9 +27,16 @@ def _report_filename(session: InterviewSession) -> str:
     slug = re.sub(r"[^a-zA-Z0-9]+", "-", raw_name).strip("-").lower() or f"session-{session.id}"
     return f"{slug}-interview-report.pdf"
 
+
+def _rag_guard(fn, *args, **kwargs):
+    try:
+        return fn(*args, **kwargs)
+    except EmbeddingConfigurationError as exc:
+        raise HTTPException(503, str(exc)) from exc
+
 @router.post("/kb/ingest")
 def ingest(role: str | None = None):
-    return ingest_knowledge_base(role)
+    return _rag_guard(ingest_knowledge_base, role)
 
 @router.post("/interviews/start", response_model=StartInterviewResponse)
 async def start_interview(role: str = Form(...), resume: UploadFile = File(...), db: Session = Depends(get_db)):
@@ -42,7 +54,7 @@ async def start_interview(role: str = Form(...), resume: UploadFile = File(...),
     db.add(session)
     db.commit()
     db.refresh(session)
-    context = retrieve(role, build_queries(role, profile), k=5)
+    context = _rag_guard(retrieve, role, build_queries(role, profile), 5)
     question = generate_question(role, profile, context, previous_questions=[], turn_number=1)
     turn = InterviewTurn(session_id=session.id, question=question, retrieved_context=context)
     db.add(turn)
@@ -75,7 +87,12 @@ def submit_answer(session_id: int, req: AnswerRequest, db: Session = Depends(get
     next_context = []
     if completed < settings.max_turns:
         previous_questions = [t.question for t in session.turns if t.question]
-        context = retrieve(session.role, build_queries(session.role, session.extracted_profile, answer), k=5)
+        context = _rag_guard(
+            retrieve,
+            session.role,
+            build_queries(session.role, session.extracted_profile, answer),
+            5,
+        )
         next_context = context
         next_question = generate_question(
             session.role,
@@ -147,7 +164,7 @@ def reset_session(session_id: int, db: Session = Depends(get_db)):
     role, profile = session.role, session.extracted_profile
     db.query(InterviewTurn).filter(InterviewTurn.session_id == session_id).delete()
     session.summary = None
-    context = retrieve(role, build_queries(role, profile), k=5)
+    context = _rag_guard(retrieve, role, build_queries(role, profile), 5)
     question = generate_question(role, profile, context, previous_questions=[], turn_number=1)
     db.add(InterviewTurn(session_id=session.id, question=question, retrieved_context=context))
     db.commit()

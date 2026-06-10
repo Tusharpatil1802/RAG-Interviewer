@@ -35,7 +35,7 @@ RoleRAG Interviewer is built as a complete interview lifecycle service rather th
 1. Load PDFs/TXT/MD from role folders.
 2. Extract text.
 3. Chunk into ~950-word chunks with 160-word overlap.
-4. Embed chunks using `sentence-transformers/all-MiniLM-L6-v2`.
+4. Embed chunks using a configurable provider/model setting. Local sentence-transformer embeddings are the development default, and OpenAI embeddings remain optional.
 5. Upsert chunks into persistent Chroma collections.
 6. At interview time, build queries from role + resume profile + optional previous answer.
 7. Retrieve top chunks, deduplicate by source/chunk, and pass them into the question generator.
@@ -48,9 +48,9 @@ The assignment-provided sources are textbook-style PDFs. Concepts often span def
 
 The interview starts from an explicit role choice. Separate collections keep retrieval focused and reduce accidental cross-role contamination, especially when documents share terms like "model", "architecture", or "database". This also makes it easy to refresh or replace one role's knowledge base independently. In a larger production system, a single collection with strict metadata filtering could work, but per-role collections are simpler, auditable, and aligned with this assignment's role-specific knowledge-base requirement.
 
-## Why `all-MiniLM-L6-v2`?
+## Why local embeddings by default?
 
-`all-MiniLM-L6-v2` is fast, lightweight, and good enough for semantic retrieval over textbook passages in a local demo. It keeps setup friction low for reviewers and works without paid embedding APIs. For production, I would benchmark it against larger embedding models and track retrieval hit rate, latency, and question quality.
+The project defaults to a local sentence-transformer model so development and demos can run without paid API credits. OpenAI embeddings remain supported through configuration for teams that want hosted embeddings in deployment.
 
 ## Why LLM-first resume extraction?
 
@@ -64,7 +64,7 @@ The final summary should reflect the candidate's actual answers and evaluations,
 
 - Pydantic schemas are used on request and response models so FastAPI validation and OpenAPI docs are useful.
 - `MAX_TURNS` is configurable instead of buried in endpoint logic.
-- Chroma and embedding function are module-level singletons to avoid repeated client/model initialization.
+- Chroma client remains a module-level singleton, but embedding initialization is lazy so import-time startup does not trigger model downloads.
 - Reset endpoint is included to support demo retries without creating a new session.
 - Error responses are explicit for invalid file types, short extracted text, missing sessions, short answers, and missing pending questions.
 

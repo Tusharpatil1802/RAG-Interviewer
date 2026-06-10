@@ -7,7 +7,8 @@ class Settings(BaseSettings):
     chroma_dir: str = "./data/chroma"
     upload_dir: str = "./data/uploads"
     kb_dir: str = "./data/kb_docs"
-    embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
+    embedding_provider: str = "local"
+    embedding_model: str = "all-MiniLM-L6-v2"
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000"
