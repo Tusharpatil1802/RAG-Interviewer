@@ -98,7 +98,7 @@ function App(){
     {!session && <CandidateEntry role={role} setRole={setRole} file={file} setFile={setFile} loading={loading} onStart={start}/>}    
     <InterviewQuestion question={question} answer={answer} setAnswer={setAnswer} currentTurn={currentTurn} maxTurns={maxTurns} runningScore={runningScore} loading={loading} onSubmit={submit} sources={currentSources}/>
     <TurnLog profile={profile} sources={sources} turns={turns}/>
-    <SummaryView summary={summary} onReset={reset} loading={loading}/>
+    <SummaryView summary={summary} onReset={reset} loading={loading} onError={setError}/>
   </main>;
 }
 

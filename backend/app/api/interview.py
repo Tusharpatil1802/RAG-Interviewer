@@ -1,5 +1,8 @@
+from io import BytesIO
 from pathlib import Path
+import re
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.models.db import get_db, InterviewSession, InterviewTurn
@@ -7,9 +10,17 @@ from app.schemas.interview import AnswerRequest, AnswerResponse, StartInterviewR
 from app.services.resume import extract_text_from_file, parse_resume
 from app.services.rag import build_queries, retrieve, ingest_knowledge_base
 from app.services.llm import generate_question, evaluate_answer, summarize_session
+from app.services.report import build_session_report_pdf
 
 router = APIRouter(prefix="/api", tags=["interview"])
 settings = get_settings()
+
+
+def _report_filename(session: InterviewSession) -> str:
+    profile = session.extracted_profile or {}
+    raw_name = session.candidate_name or profile.get("name") or f"session-{session.id}"
+    slug = re.sub(r"[^a-zA-Z0-9]+", "-", raw_name).strip("-").lower() or f"session-{session.id}"
+    return f"{slug}-interview-report.pdf"
 
 @router.post("/kb/ingest")
 def ingest(role: str | None = None):
@@ -112,6 +123,21 @@ def get_session(session_id: int, db: Session = Depends(get_db)):
         ],
         "summary": session.summary,
     }
+
+
+@router.get("/interviews/{session_id}/report.pdf")
+def download_session_report(session_id: int, db: Session = Depends(get_db)):
+    session = db.get(InterviewSession, session_id)
+    if not session:
+        raise HTTPException(404, "Session not found")
+    completed = [turn for turn in session.turns if turn.answer]
+    if not completed:
+        raise HTTPException(400, "Complete at least one interview turn before downloading a report")
+
+    pdf_bytes = build_session_report_pdf(session, settings.max_turns)
+    filename = _report_filename(session)
+    headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
+    return StreamingResponse(BytesIO(pdf_bytes), media_type="application/pdf", headers=headers)
 
 @router.post("/interviews/{session_id}/reset")
 def reset_session(session_id: int, db: Session = Depends(get_db)):
