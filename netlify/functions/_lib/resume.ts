@@ -1,6 +1,5 @@
 import pdf from 'pdf-parse';
-import { appConfig } from './config.js';
-import { getOpenAIClient, hasOpenAI, safeJsonParse } from './openai.js';
+import { chatModel, getChatClient, hasChatClient, safeJsonParse } from './openai.js';
 import type { ResumeProfile } from './types.js';
 
 const SECTION_STOP_HEADERS = new Set([
@@ -123,7 +122,7 @@ function fallbackResumeParse(text: string): ResumeProfile {
           return [category.trim(), values.split(',').map((item) => item.trim()).filter(Boolean)];
         }),
     ),
-    summary: sectionLines(lines, 'SUMMARY').slice(0, 4).join(' ') || 'Fallback extraction used. Add OPENAI_API_KEY for richer JSON profile extraction.',
+    summary: sectionLines(lines, 'SUMMARY').slice(0, 4).join(' ') || 'Fallback extraction used. Add GROQ_API_KEY for richer JSON profile extraction.',
   };
 }
 
@@ -137,9 +136,9 @@ export async function extractTextFromUpload(filename: string, bytes: Uint8Array)
 
 export async function parseResume(text: string): Promise<ResumeProfile> {
   const fallback = fallbackResumeParse(text);
-  if (!hasOpenAI()) return fallback;
+  if (!hasChatClient()) return fallback;
 
-  const client = getOpenAIClient();
+  const client = getChatClient();
   const prompt = `Extract a structured candidate profile from this resume text.
 Return valid JSON only with keys:
 name, emails, phones, skills, years_experience, domains, projects, seniority_signal, summary.
@@ -152,7 +151,7 @@ ${text.slice(0, 12000)}`;
 
   try {
     const response = await client.chat.completions.create({
-      model: appConfig.openaiModel,
+      model: chatModel(),
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.1,
       response_format: { type: 'json_object' },

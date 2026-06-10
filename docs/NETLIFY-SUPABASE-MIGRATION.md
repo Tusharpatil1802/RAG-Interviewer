@@ -50,8 +50,9 @@ to:
 - `SUPABASE_RESUME_BUCKET`
 - `SUPABASE_REPORT_BUCKET`
 - `SUPABASE_KB_BUCKET`
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL`
+- `GROQ_API_KEY`
+- `GROQ_MODEL`
+- `EMBEDDING_PROVIDER`
 - `EMBEDDING_MODEL`
 - `MAX_TURNS`
 
@@ -131,7 +132,7 @@ Then fill in:
 
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `OPENAI_API_KEY`
+- `GROQ_API_KEY`
 
 Type-check the new Netlify backend:
 
@@ -180,23 +181,27 @@ For the future Netlify deployment path, the equivalent route will still be:
 curl -X POST "https://YOUR_NETLIFY_SITE.netlify.app/api/kb/ingest?role=AI/ML%20Engineer"
 ```
 
-## Current Trade-Off
+## Hosted AI Configuration
 
-This new hosted backend currently assumes OpenAI-powered embeddings for the Netlify deployment path.
+The hosted Netlify backend uses:
 
-Reason:
+- Groq for resume extraction, question generation, answer evaluation, and summaries
+- deterministic 1536-dimensional hash embeddings for Supabase `pgvector` retrieval
 
-- local sentence-transformer embeddings are fine for local Python development
-- Netlify Functions are a much tighter runtime for model downloads, vector generation latency, and cold starts
+Recommended Netlify values:
 
-That means:
+```env
+GROQ_API_KEY=your_groq_key
+GROQ_MODEL=llama-3.1-8b-instant
+EMBEDDING_PROVIDER=hash
+EMBEDDING_MODEL=hash-embedding-1536
+```
 
-- the old Python backend still supports the current local setup
-- the new Netlify backend is the hosted path under construction
+The old Python backend still supports the current local setup with local sentence-transformer embeddings.
 
 ## Next Migration Steps
 
-1. Add setup docs for Supabase buckets and SQL migration execution.
-2. Verify the Netlify function build after installing root dependencies.
-3. Decide whether to keep OpenAI embeddings for hosted mode or add a separate hosted embedding provider.
-4. Port any remaining behavior gaps between the Python and TypeScript backends.
+1. Add the Netlify environment variables.
+2. Redeploy the site.
+3. Run `/api/kb/ingest?role=AI/ML%20Engineer`.
+4. Test the interview flow and PDF report.

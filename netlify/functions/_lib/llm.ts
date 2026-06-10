@@ -1,5 +1,5 @@
 import { appConfig } from './config.js';
-import { getOpenAIClient, hasOpenAI, safeJsonParse } from './openai.js';
+import { chatModel, getChatClient, hasChatClient, safeJsonParse } from './openai.js';
 import type { EvaluationResult, RetrievedContext, ResumeProfile, InterviewTurnRow } from './types.js';
 
 function experienceLabel(profile: ResumeProfile) {
@@ -47,11 +47,11 @@ export async function generateQuestion(
   turnNumber: number,
   lastAnswer?: string,
 ) {
-  if (!hasOpenAI()) {
+  if (!hasChatClient()) {
     return fallbackQuestion(role, profile, previousQuestions, turnNumber, lastAnswer, context);
   }
 
-  const client = getOpenAIClient();
+  const client = getChatClient();
   const prompt = `You are a senior technical interviewer.
 
 Generate exactly ONE interview question for this candidate.
@@ -95,7 +95,7 @@ Return only the question.`;
 
   try {
     const response = await client.chat.completions.create({
-      model: appConfig.openaiModel,
+      model: chatModel(),
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
     });
@@ -150,9 +150,9 @@ function fallbackEvaluation(answer: string, context: RetrievedContext[]): Evalua
 }
 
 export async function evaluateAnswer(question: string, answer: string, context: RetrievedContext[]): Promise<EvaluationResult> {
-  if (!hasOpenAI()) return fallbackEvaluation(answer, context);
+  if (!hasChatClient()) return fallbackEvaluation(answer, context);
 
-  const client = getOpenAIClient();
+  const client = getChatClient();
   const prompt = `Evaluate the candidate answer as JSON with keys score, strengths, gaps, follow_up.
 Question: ${question}
 Answer: ${answer}
@@ -161,7 +161,7 @@ Score out of 10. Be concise, fair, and specific. Strengths and gaps must be arra
 
   try {
     const response = await client.chat.completions.create({
-      model: appConfig.openaiModel,
+      model: chatModel(),
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.2,
       response_format: { type: 'json_object' },
@@ -181,7 +181,7 @@ export async function summarizeSession(role: string, profile: ResumeProfile, tur
     .filter((score) => Number.isFinite(score));
   const average = scores.length ? (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(1) : null;
 
-  if (!hasOpenAI()) {
+  if (!hasChatClient()) {
     const strengths = completed.flatMap((turn) => turn.evaluation?.strengths || []).slice(0, 6);
     const gaps = completed.flatMap((turn) => turn.evaluation?.gaps || []).slice(0, 6);
     return [
@@ -193,7 +193,7 @@ export async function summarizeSession(role: string, profile: ResumeProfile, tur
     ].join('\n');
   }
 
-  const client = getOpenAIClient();
+  const client = getChatClient();
   const transcript = completed.map((turn) => ({
     question: turn.question,
     answer: turn.answer,
@@ -216,7 +216,7 @@ Base every claim on the transcript and evaluations. Do not invent credentials.`;
 
   try {
     const response = await client.chat.completions.create({
-      model: appConfig.openaiModel,
+      model: chatModel(),
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.25,
     });
