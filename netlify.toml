@@ -3,6 +3,9 @@
   publish = "frontend/dist"
   functions = "netlify/functions"
 
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "EMBEDDING_MODEL,EMBEDDING_PROVIDER,GROQ_MODEL,MAX_TURNS,OPENAI_MODEL,SUPABASE_KB_BUCKET,SUPABASE_REPORT_BUCKET,SUPABASE_RESUME_BUCKET"
+
 [functions]
   node_bundler = "esbuild"
 
