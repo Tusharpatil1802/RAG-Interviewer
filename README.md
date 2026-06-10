@@ -240,42 +240,6 @@ Services:
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8000`
 
-## Deploy On Render
-
-This repo includes a root-level `render.yaml` for a two-service Render setup:
-
-- `role-rag-interviewer-api`: Docker-based FastAPI backend
-- `role-rag-interviewer-frontend`: static Vite frontend
-
-Why this setup:
-
-- the backend needs persistent storage for `SQLite`, uploaded files, and `Chroma`
-- the frontend can be served cheaply as a static site
-
-Deployment steps:
-
-1. Push the repo to GitHub.
-2. In Render, choose `New +` -> `Blueprint`.
-3. Select this repository.
-4. Render will detect `render.yaml` and create both services.
-5. When prompted, set `OPENAI_API_KEY` only if you want OpenAI-powered resume/question/evaluation flows.
-
-Important deployment notes:
-
-- the backend service is configured with a persistent disk mounted at `/app/data`
-- `DATABASE_URL`, `CHROMA_DIR`, `UPLOAD_DIR`, and `KB_DIR` are pointed at that persistent storage
-- local embeddings are the default deployment path, so RAG ingestion works without OpenAI credits
-- after deploy, upload or copy role documents into the deployed knowledge-base folder and run:
-
-```bash
-curl -X POST "https://role-rag-interviewer-api.onrender.com/api/kb/ingest?role=AI/ML%20Engineer"
-```
-
-If you rename either Render service, update these environment variables in Render:
-
-- backend `CORS_ORIGINS`
-- frontend `VITE_API_URL`
-
 ## Why This Project Is Useful
 
 This project is more than a prompt wrapper. It demonstrates:
