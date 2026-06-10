@@ -1,9 +1,14 @@
 .env
 .venv
+venv
 __pycache__
+**/__pycache__/
 *.pyc
+*.pyo
+.DS_Store
 node_modules
 dist
+backend/package-lock.json
 backend/interview.db
 backend/data/chroma/*
 backend/data/uploads/*
