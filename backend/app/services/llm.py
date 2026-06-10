@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json
+import re
 from openai import OpenAI
 from app.core.config import get_settings
 
@@ -285,7 +286,66 @@ Return only the question.
         return _fallback_question(role, resume_profile, previous_questions, turn_number, last_answer, retrieved_context)
 
 
-def _fallback_evaluation(answer: str, context: list[dict]) -> dict:
+def _invalid_answer_evaluation(question: str, answer: str) -> dict | None:
+    normalized = " ".join(answer.split())
+    lowered = normalized.lower()
+    words = re.findall(r"[a-zA-Z][a-zA-Z0-9+#.\-]*", normalized)
+    alpha_chars = re.findall(r"[a-zA-Z]", normalized)
+    vowel_count = len(re.findall(r"[aeiouAEIOU]", normalized))
+    vowel_ratio = vowel_count / max(len(alpha_chars), 1)
+
+    if len(normalized) < 20 or len(words) < 4:
+        is_single_random_token = len(words) <= 1 and len(normalized) >= 10
+        looks_like_gibberish = is_single_random_token or (len(alpha_chars) >= 10 and vowel_ratio < 0.22)
+        if looks_like_gibberish:
+            return {
+                "score": 0,
+                "strengths": ["Not answered properly."],
+                "gaps": [
+                    "The answer appears to be random text or gibberish.",
+                    "It does not address the question or provide any deployable technical reasoning.",
+                    "A valid answer must explain concrete architecture, trade-offs, risks, and implementation steps.",
+                ],
+                "follow_up": "Ask the candidate to answer again from scratch with a structured technical response.",
+                "grounded_notes": "Invalid answer quality gate triggered before LLM evaluation.",
+            }
+        return {
+            "score": 0,
+            "strengths": ["Not answered properly."],
+            "gaps": [
+                "The response does not contain enough technical detail to assess the candidate.",
+                "It does not directly answer the interview question.",
+                "It needs a clear explanation, concrete examples, and trade-offs.",
+            ],
+            "follow_up": "Ask for a complete answer with architecture, reasoning, and operational details.",
+            "grounded_notes": "Short answer quality gate triggered before LLM evaluation.",
+        }
+
+    acknowledgement_only = {
+        "yes", "no", "maybe", "ok", "okay", "sure", "idk", "dont know", "don't know",
+        "i dont know", "i don't know", "not sure", "no idea"
+    }
+    if lowered in acknowledgement_only:
+        return {
+            "score": 0,
+            "strengths": ["Not answered properly."],
+            "gaps": [
+                "The response does not attempt the requested design or reasoning.",
+                "It gives no evidence of knowledge related to the question.",
+                "It should include a structured explanation and concrete implementation details.",
+            ],
+            "follow_up": "Ask the candidate to walk through the answer step by step instead of giving a short acknowledgement.",
+            "grounded_notes": "Non-answer quality gate triggered before LLM evaluation.",
+        }
+
+    return None
+
+
+def _fallback_evaluation(question: str, answer: str, context: list[dict]) -> dict:
+    invalid = _invalid_answer_evaluation(question, answer)
+    if invalid:
+        return invalid
+
     lowered = answer.lower()
     words = len(answer.split())
     score = 2
@@ -339,19 +399,32 @@ def _fallback_evaluation(answer: str, context: list[dict]) -> dict:
     }
 
 def evaluate_answer(question: str, answer: str, context: list[dict]) -> dict:
+    invalid = _invalid_answer_evaluation(question, answer)
+    if invalid:
+        return invalid
+
     ctx = "\n".join(c["text"][:600] for c in context)
     if not _CLIENT:
-        return _fallback_evaluation(answer, context)
+        return _fallback_evaluation(question, answer, context)
     prompt = f"""Evaluate the candidate answer as JSON with keys score, strengths, gaps, follow_up.
 Question: {question}
 Answer: {answer}
 Reference context: {ctx}
-Score out of 10. Be concise, fair, and specific. Strengths and gaps must be arrays of strings."""
+Score out of 10. Be strict, fair, and specific.
+Do not sugarcoat and do not invent strengths.
+If the answer is gibberish, random characters, a non-answer, or does not address the question, score 0 or 1.
+If there are no real strengths, set strengths to ["None: ..."] and explain why.
+Strengths and gaps must be arrays of strings."""
     try:
         resp = _CLIENT.chat.completions.create(model=settings.openai_model, messages=[{"role":"user","content":prompt}], temperature=0.2, response_format={"type":"json_object"})
-        return safe_json_loads(resp.choices[0].message.content, {"score": 5, "strengths": ["Submitted answer"], "gaps": ["Evaluator output could not be parsed"]})
+        parsed = safe_json_loads(resp.choices[0].message.content, {"score": 1, "strengths": ["None: evaluator output could not be parsed"], "gaps": ["Retry evaluation with a valid structured response."]})
+        try:
+            parsed["score"] = max(0, min(10, float(parsed.get("score", 1))))
+        except (TypeError, ValueError):
+            parsed["score"] = 1
+        return parsed
     except Exception:
-        return {"score": 5, "strengths": ["Submitted answer"], "gaps": ["LLM evaluator failed; retry with a valid API key"]}
+        return _fallback_evaluation(question, answer, context)
 
 def summarize_session(role: str, profile: dict, turns: list) -> str:
     completed = [t for t in turns if t.answer]

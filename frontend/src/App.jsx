@@ -87,7 +87,6 @@ function App(){
   return <main>
     <header className="hero">
       <div>
-        <p className="eyebrow">AI/ML & Backend Intern Assignment</p>
         <h1>RoleRAG Interviewer</h1>
         <p>Resume-aware, role-based technical screening with RAG retrieval, adaptive questions, answer evaluation, and session traceability.</p>
       </div>

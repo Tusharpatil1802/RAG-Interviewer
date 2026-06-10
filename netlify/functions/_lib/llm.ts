@@ -105,7 +105,68 @@ Return only the question.`;
   }
 }
 
+function invalidAnswerEvaluation(answer: string): EvaluationResult | null {
+  const normalized = answer.replace(/\s+/g, ' ').trim();
+  const lowered = normalized.toLowerCase();
+  const words = normalized.match(/[a-zA-Z][a-zA-Z0-9+#.-]*/g) || [];
+  const alphaChars = normalized.match(/[a-zA-Z]/g) || [];
+  const vowelCount = (normalized.match(/[aeiouAEIOU]/g) || []).length;
+  const vowelRatio = vowelCount / Math.max(alphaChars.length, 1);
+
+  if (normalized.length < 20 || words.length < 4) {
+    const isSingleRandomToken = words.length <= 1 && normalized.length >= 10;
+    const looksLikeGibberish = isSingleRandomToken || (alphaChars.length >= 10 && vowelRatio < 0.22);
+    if (looksLikeGibberish) {
+      return {
+        score: 0,
+        strengths: ['Not answered properly.'],
+        gaps: [
+          'The answer appears to be random text or gibberish.',
+          'It does not address the question or provide any deployable technical reasoning.',
+          'A valid answer must explain concrete architecture, trade-offs, risks, and implementation steps.',
+        ],
+        follow_up: 'Ask the candidate to answer again from scratch with a structured technical response.',
+        grounded_notes: 'Invalid answer quality gate triggered before LLM evaluation.',
+      };
+    }
+    return {
+      score: 0,
+      strengths: ['Not answered properly.'],
+      gaps: [
+        'The response does not contain enough technical detail to assess the candidate.',
+        'It does not directly answer the interview question.',
+        'It needs a clear explanation, concrete examples, and trade-offs.',
+      ],
+      follow_up: 'Ask for a complete answer with architecture, reasoning, and operational details.',
+      grounded_notes: 'Short answer quality gate triggered before LLM evaluation.',
+    };
+  }
+
+  const acknowledgementOnly = new Set([
+    'yes', 'no', 'maybe', 'ok', 'okay', 'sure', 'idk', 'dont know', "don't know",
+    'i dont know', "i don't know", 'not sure', 'no idea',
+  ]);
+  if (acknowledgementOnly.has(lowered)) {
+    return {
+      score: 0,
+      strengths: ['Not answered properly.'],
+      gaps: [
+        'The response does not attempt the requested design or reasoning.',
+        'It gives no evidence of knowledge related to the question.',
+        'It should include a structured explanation and concrete implementation details.',
+      ],
+      follow_up: 'Ask the candidate to walk through the answer step by step instead of giving a short acknowledgement.',
+      grounded_notes: 'Non-answer quality gate triggered before LLM evaluation.',
+    };
+  }
+
+  return null;
+}
+
 function fallbackEvaluation(answer: string, context: RetrievedContext[]): EvaluationResult {
+  const invalid = invalidAnswerEvaluation(answer);
+  if (invalid) return invalid;
+
   const lowered = answer.toLowerCase();
   const words = answer.split(/\s+/).filter(Boolean).length;
   let score = 2;
@@ -150,6 +211,9 @@ function fallbackEvaluation(answer: string, context: RetrievedContext[]): Evalua
 }
 
 export async function evaluateAnswer(question: string, answer: string, context: RetrievedContext[]): Promise<EvaluationResult> {
+  const invalid = invalidAnswerEvaluation(answer);
+  if (invalid) return invalid;
+
   if (!hasChatClient()) return fallbackEvaluation(answer, context);
 
   const client = getChatClient();
@@ -157,7 +221,11 @@ export async function evaluateAnswer(question: string, answer: string, context: 
 Question: ${question}
 Answer: ${answer}
 Reference context: ${context.map((item) => item.text.slice(0, 600)).join('\n')}
-Score out of 10. Be concise, fair, and specific. Strengths and gaps must be arrays of strings.`;
+Score out of 10. Be strict, fair, and specific.
+Do not sugarcoat and do not invent strengths.
+If the answer is gibberish, random characters, a non-answer, or does not address the question, score 0 or 1.
+If there are no real strengths, set strengths to ["None: ..."] and explain why.
+Strengths and gaps must be arrays of strings.`;
 
   try {
     const response = await client.chat.completions.create({
@@ -166,7 +234,9 @@ Score out of 10. Be concise, fair, and specific. Strengths and gaps must be arra
       temperature: 0.2,
       response_format: { type: 'json_object' },
     });
-    return safeJsonParse<EvaluationResult>(response.choices[0]?.message?.content, fallbackEvaluation(answer, context));
+    const parsed = safeJsonParse<EvaluationResult>(response.choices[0]?.message?.content, fallbackEvaluation(answer, context));
+    parsed.score = Math.max(0, Math.min(10, Number(parsed.score) || 0));
+    return parsed;
   } catch {
     return fallbackEvaluation(answer, context);
   }
