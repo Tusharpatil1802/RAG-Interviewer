@@ -6,22 +6,25 @@ import { ingestKnowledgeBase, buildQueries, retrieveContext } from './_lib/rag.j
 import { parseResume, extractTextFromUpload } from './_lib/resume.js';
 import { buildSessionReport, reportFilename } from './_lib/report.js';
 import { uploadResume, uploadReport } from './_lib/storage.js';
-import { supabase } from './_lib/supabase.js';
+import { getSupabase } from './_lib/supabase.js';
 import type { InterviewSessionRow, InterviewTurnRow, RetrievedContext, ResumeProfile } from './_lib/types.js';
 
 async function getSession(sessionId: number): Promise<InterviewSessionRow> {
+  const supabase = getSupabase();
   const { data, error } = await supabase.from('interview_sessions').select('*').eq('id', sessionId).single();
   if (error || !data) throw new HttpError(404, 'Session not found', error);
   return data as InterviewSessionRow;
 }
 
 async function getTurns(sessionId: number): Promise<InterviewTurnRow[]> {
+  const supabase = getSupabase();
   const { data, error } = await supabase.from('interview_turns').select('*').eq('session_id', sessionId).order('id');
   if (error) throw new HttpError(500, 'Failed to load interview turns', error);
   return (data || []) as InterviewTurnRow[];
 }
 
 async function createTurn(sessionId: number, question: string, retrievedContext: RetrievedContext[]) {
+  const supabase = getSupabase();
   const { error } = await supabase.from('interview_turns').insert({
     session_id: sessionId,
     question,
@@ -44,6 +47,7 @@ async function startInterview(request: Request) {
 
   const profile = await parseResume(resumeText);
   const resumeObjectPath = await uploadResume(resume.name, bytes, resume.type || 'application/octet-stream');
+  const supabase = getSupabase();
 
   const { data: sessionData, error: sessionError } = await supabase.from('interview_sessions').insert({
     role,
@@ -78,6 +82,7 @@ async function submitAnswer(sessionId: number, request: Request) {
   if (answer.length < 10) throw new HttpError(400, 'Answer is too short');
 
   const evaluation = await evaluateAnswer(currentTurn.question, answer, currentTurn.retrieved_context || []);
+  const supabase = getSupabase();
   const { error: updateError } = await supabase.from('interview_turns').update({
     answer,
     evaluation,
@@ -141,6 +146,7 @@ async function getSessionSummary(sessionId: number) {
 
 async function resetSession(sessionId: number) {
   const session = await getSession(sessionId);
+  const supabase = getSupabase();
   const { error: deleteError } = await supabase.from('interview_turns').delete().eq('session_id', sessionId);
   if (deleteError) throw new HttpError(500, 'Failed to clear interview turns', deleteError);
   const { error: summaryError } = await supabase.from('interview_sessions').update({ summary: null }).eq('id', sessionId);
@@ -168,6 +174,7 @@ async function downloadReport(sessionId: number) {
   const pdfBytes = await buildSessionReport(session, turns, appConfig.maxTurns);
   const filename = reportFilename(session);
   const objectPath = await uploadReport(sessionId, filename, new Uint8Array(pdfBytes));
+  const supabase = getSupabase();
   await supabase.from('interview_sessions').update({ report_object_path: objectPath }).eq('id', sessionId);
 
   return new Response(new Uint8Array(pdfBytes), {

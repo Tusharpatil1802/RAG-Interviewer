@@ -1,11 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 import { appConfig, assertConfigured } from './config.js';
 
-assertConfigured(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']);
+let cachedClient: ReturnType<typeof createClient<any, 'public', any>> | null = null;
 
-export const supabase = createClient(appConfig.supabaseUrl, appConfig.supabaseServiceRoleKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-});
+export function getSupabase() {
+  assertConfigured(['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY']);
+  if (!cachedClient) {
+    cachedClient = createClient(appConfig.supabaseUrl, appConfig.supabaseServiceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    });
+  }
+  return cachedClient;
+}

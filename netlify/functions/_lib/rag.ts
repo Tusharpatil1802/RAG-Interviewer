@@ -3,7 +3,7 @@ import { HttpError } from './errors.js';
 import { embedTexts } from './openai.js';
 import { extractTextFromUpload } from './resume.js';
 import { listFolder, downloadBuffer } from './storage.js';
-import { supabase } from './supabase.js';
+import { getSupabase } from './supabase.js';
 import type { ResumeProfile, RetrievedContext } from './types.js';
 
 export const ROLE_DIRECTORIES: Record<string, string> = {
@@ -37,6 +37,7 @@ function chunkText(text: string, chunkSize = 950, overlap = 160) {
 }
 
 export async function ingestKnowledgeBase(role?: string) {
+  const supabase = getSupabase();
   const roles = role ? [role] : Object.keys(ROLE_DIRECTORIES);
   let total = 0;
   const scannedRoles: string[] = [];
@@ -113,6 +114,7 @@ export function buildQueries(role: string, resumeProfile: ResumeProfile, lastAns
 
 export async function retrieveContext(role: string, queries: string[], count = 4): Promise<RetrievedContext[]> {
   if (!queries.length) return [];
+  const supabase = getSupabase();
   const embeddings = await embedTexts(queries);
   const results: RetrievedContext[] = [];
 
