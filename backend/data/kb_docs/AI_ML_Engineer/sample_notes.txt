@@ -1,0 +1,3 @@
+Machine learning systems should be evaluated for accuracy, latency, robustness, and monitoring.
+RAG systems depend on retrieval quality, chunking strategy, embedding quality, and grounding.
+Production AI systems need observability, offline evaluation, and fallback handling.

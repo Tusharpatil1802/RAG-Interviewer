@@ -31,7 +31,7 @@ export async function buildSessionReport(session: InterviewSessionRow, turns: In
     doc.on('end', () => resolve(Buffer.concat(chunks)));
   });
 
-  doc.fontSize(22).text('RoleRAG Interview Report', { underline: false });
+  doc.fontSize(22).text('InterviewIQ Report', { underline: false });
   doc.moveDown(0.5);
   doc.fontSize(11).text(`Candidate-focused interview summary for the role ${session.role}.`);
   doc.moveDown();

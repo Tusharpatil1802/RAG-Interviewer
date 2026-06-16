@@ -87,7 +87,7 @@ function App(){
   return <main>
     <header className="hero">
       <div>
-        <h1>RoleRAG Interviewer</h1>
+        <h1> InterviewIQ</h1>
         <p>Resume-aware, role-based technical screening with RAG retrieval, adaptive questions, answer evaluation, and session traceability.</p>
       </div>
       {session && <button className="secondary" onClick={reset} disabled={loading}>Reset</button>}

@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InterviewIQ - Loom Walkthrough Guide</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #526071;
+      --line: #d8e1ee;
+      --card: #ffffff;
+      --bg: #f5f7fb;
+      --accent: #0f4cbd;
+      --soft: #eff6ff;
+      --stage: #1e293b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.55;
+    }
+    .page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 36px 44px 56px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #0f4cbd 100%);
+      color: #fff;
+      border-radius: 22px;
+      padding: 30px 32px;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      margin: 0 0 8px;
+      font-size: 33px;
+      line-height: 1.1;
+    }
+    .hero p {
+      margin: 0;
+      color: rgba(255,255,255,.92);
+      font-size: 15px;
+      max-width: 760px;
+    }
+    .section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 24px 26px;
+      margin-bottom: 18px;
+      page-break-inside: avoid;
+    }
+    h2 {
+      margin: 0 0 12px;
+      font-size: 22px;
+    }
+    h3 {
+      margin: 16px 0 8px;
+      font-size: 17px;
+      color: var(--accent);
+    }
+    p { margin: 8px 0; }
+    ul, ol { margin: 10px 0 10px 22px; padding: 0; }
+    li { margin: 6px 0; }
+    .box {
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    .show {
+      background: #f8fafc;
+      border: 1px solid #d8e2f0;
+    }
+    .say {
+      background: var(--soft);
+      border: 1px solid #bfdbfe;
+    }
+    .tip {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+    }
+    .timeline {
+      display: grid;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .timeline-item {
+      border: 1px solid #d9e2ee;
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px 18px;
+    }
+    .time {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1e3a8a;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .mono {
+      font-family: Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+    }
+    .checklist {
+      columns: 2;
+      column-gap: 28px;
+    }
+    @media print {
+      body { background: #fff; }
+      .page { max-width: none; padding: 20px 28px 32px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <h1>Loom Walkthrough Guide</h1>
+      <p>
+        Presentation-ready recording guide for explaining InterviewIQ step by step.
+        Use this as your speaking script, screen flow, and topic checklist while recording.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>1. Recommended Video Goal</h2>
+      <p>
+        Record a clear 8 to 12 minute walkthrough that explains what the project does, why it exists,
+        how the architecture works, how the user flow works, and what technical decisions make it interesting.
+      </p>
+      <div class="tip">
+        Best approach: keep the video practical. Show the UI first, then reveal the code and architecture behind it.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2. Recording Structure</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="time">0:00 - 0:45</div>
+          <strong>Introduction</strong>
+          <p>Introduce the project, problem statement, and the main idea.</p>
+        </div>
+        <div class="timeline-item">
+          <div class="time">0:45 - 2:00</div>
+          <strong>What the Application Does</strong>
+          <p>Show the UI and explain the interview lifecycle at a high level.</p>
+        </div>
+        <div class="timeline-item">
+          <div class="time">2:00 - 4:00</div>
+          <strong>System Architecture</strong>
+          <p>Explain frontend, backend, services, database, and Chroma-based retrieval.</p>
+        </div>
+        <div class="timeline-item">
+          <div class="time">4:00 - 6:30</div>
+          <strong>Backend Deep Dive</strong>
+          <p>Walk through endpoints, resume parsing, RAG pipeline, question generation, and evaluation logic.</p>
+        </div>
+        <div class="timeline-item">
+          <div class="time">6:30 - 8:00</div>
+          <strong>Frontend Deep Dive</strong>
+          <p>Show the components and explain how state flows during the interview.</p>
+        </div>
+        <div class="timeline-item">
+          <div class="time">8:00 - 9:30</div>
+          <strong>Strengths, Trade-offs, and Limitations</strong>
+          <p>Talk honestly about what is good now and what you would improve next.</p>
+        </div>
+        <div class="timeline-item">
+          <div class="time">9:30 - 10:30</div>
+          <strong>Closing</strong>
+          <p>Summarize the value of the system and what makes it different from a basic prompt app.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>3. Opening Script</h2>
+      <div class="say">
+        <strong>What to say</strong>
+        <p>
+          "This project is called InterviewIQ. It is a full-stack interview system that takes a candidate resume,
+          retrieves role-specific knowledge-base content, generates grounded technical questions, evaluates answers,
+          and produces a final summary. The main goal is to make technical interviews more relevant than generic question generation."
+        </p>
+      </div>
+      <div class="show">
+        <strong>What to show</strong>
+        <p>Open the app home screen first, then briefly show the repository structure in the IDE.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>4. Problem Statement Talking Points</h2>
+      <ul>
+        <li>Generic interview bots ask shallow or repeated questions.</li>
+        <li>They usually ignore the candidate's real resume context.</li>
+        <li>They often have no grounding in actual role knowledge.</li>
+        <li>This project tries to fix that by combining resume parsing with role-specific RAG retrieval.</li>
+      </ul>
+      <div class="say">
+        <strong>What to say</strong>
+        <p>
+          "Instead of asking generic ML or backend questions, this system first understands the candidate profile
+          and then retrieves role-specific context from a knowledge base. That makes the generated questions more relevant, more grounded, and easier to justify."
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>5. Demo Flow Script</h2>
+      <div class="show">
+        <strong>What to show</strong>
+        <ol>
+          <li>Show the role dropdown.</li>
+          <li>Show resume upload input.</li>
+          <li>Explain that the backend extracts text and creates a profile.</li>
+          <li>Show the first interview question and source grounding area.</li>
+          <li>Show how answers are evaluated with score, strengths, gaps, and follow-up.</li>
+          <li>Show the final summary view after interview completion.</li>
+        </ol>
+      </div>
+      <div class="say">
+        <strong>What to say</strong>
+        <p>
+          "From the UI, the user selects a role and uploads a resume. Once the interview starts, the system builds a structured profile,
+          retrieves relevant role knowledge, asks a grounded question, and continues adaptively based on the candidate's answers.
+          Each turn is stored along with retrieved context and evaluation output."
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>6. Architecture Explanation Script</h2>
+      <div class="show">
+        <strong>What to show</strong>
+        <p>Open <span class="mono">docs/ARCHITECTURE.md</span> and the main folder structure.</p>
+      </div>
+      <div class="say">
+        <strong>What to say</strong>
+        <p>
+          "The architecture is split into clear layers. The React frontend handles user interaction and renders the interview lifecycle.
+          The FastAPI backend exposes endpoints for starting interviews, submitting answers, resetting sessions, and fetching summaries.
+          The service layer handles resume parsing, RAG retrieval, and LLM-based reasoning. SQLAlchemy stores sessions and turns,
+          while ChromaDB stores the vectorized knowledge base."
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>7. Backend Walkthrough Script</h2>
+      <h3>Main Entry</h3>
+      <div class="show">
+        <strong>Show</strong>
+        <p><span class="mono">backend/app/main.py</span></p>
+      </div>
+      <div class="say">
+        <strong>Say</strong>
+        <p>
+          "This file initializes FastAPI, enables CORS for the frontend, includes the interview router,
+          and creates the database tables on startup."
+        </p>
+      </div>
+
+      <h3>API Routes</h3>
+      <div class="show">
+        <strong>Show</strong>
+        <p><span class="mono">backend/app/api/interview.py</span></p>
+      </div>
+      <div class="say">
+        <strong>Say</strong>
+        <p>
+          "This is the main orchestration layer. It handles KB ingestion, interview start, answer submission,
+          summary fetch, and reset. The start endpoint creates the first question, while the answer endpoint stores the response,
+          evaluates it, and either generates the next question or finalizes the session summary."
+        </p>
+      </div>
+
+      <h3>Database Model</h3>
+      <div class="show">
+        <strong>Show</strong>
+        <p><span class="mono">backend/app/models/db.py</span></p>
+      </div>
+      <div class="say">
+        <strong>Say</strong>
+        <p>
+          "The data model is intentionally simple: one table for interview sessions and one table for interview turns.
+          This preserves the trace of question, answer, retrieved context, and evaluation for each step."
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>8. Resume Parsing Script</h2>
+      <div class="show">
+        <strong>What to show</strong>
+        <p><span class="mono">backend/app/services/resume.py</span></p>
+      </div>
+      <div class="say">
+        <strong>What to say</strong>
+        <p>
+          "The resume service first extracts raw text from PDF or TXT. Then it tries to build a structured profile.
+          If an OpenAI API key is available, it uses the model to extract clean JSON. If not, it falls back to deterministic parsing
+          using section detection, regex patterns, skill hints, and domain inference. That makes the system more resilient during demos."
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>9. RAG Pipeline Script</h2>
+      <div class="show">
+        <strong>What to show</strong>
+        <p><span class="mono">backend/app/services/rag.py</span> and <span class="mono">backend/data/kb_docs/README.md</span></p>
+      </div>
+      <div class="say">
+        <strong>What to say</strong>
+        <p>
+          "The RAG service handles knowledge-base ingestion and retrieval. It reads role-specific documents, chunks them into roughly
+          950-word windows with overlap, embeds them using all-MiniLM-L6-v2, and stores them in Chroma. During the interview,
+          it builds queries from the role, skills, projects, domains, and even the latest answer, then retrieves the most relevant chunks."
+        </p>
+      </div>
+      <div class="tip">
+        Mention why separate collections are used: it keeps retrieval focused and avoids contamination across roles.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>10. LLM Logic Script</h2>
+      <div class="show">
+        <strong>What to show</strong>
+        <p><span class="mono">backend/app/services/llm.py</span></p>
+      </div>
+      <div class="say">
+        <strong>What to say</strong>
+        <p>
+          "This file handles three important tasks: question generation, answer evaluation, and final summary creation.
+          The prompt for question generation includes the role, extracted resume profile, retrieved knowledge-base context,
+          previous questions, and the latest answer. That helps the model produce grounded and non-repetitive questions.
+          There is also fallback logic so the system can still operate without OpenAI."
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>11. Frontend Walkthrough Script</h2>
+      <div class="show">
+        <strong>What to show</strong>
+        <p>
+          Open <span class="mono">frontend/src/App.jsx</span> first, then show the components folder.
+        </p>
+      </div>
+      <div class="say">
+        <strong>What to say</strong>
+        <p>
+          "The frontend is centered around one main stateful component. It tracks the session id, extracted profile,
+          current question, current answer, historical turns, summary, loading state, and error state. The app sends form data
+          to start the interview and JSON for each answer submission. The UI is broken into smaller components like candidate entry,
+          question card, turn log, evaluation card, stepper, and summary view."
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>12. Important Technical Decisions to Explain</h2>
+      <ul>
+        <li>Why the app uses role-specific Chroma collections.</li>
+        <li>Why it keeps turn-level context and evaluation in the database.</li>
+        <li>Why it supports fallback logic without an OpenAI key.</li>
+        <li>Why chunk size is relatively large for textbook-style sources.</li>
+        <li>Why FastAPI + React is a good choice for quick, well-structured prototyping.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>13. Strengths and Limitations Script</h2>
+      <div class="say">
+        <strong>What to say</strong>
+        <p>
+          "One strength of this project is that it is not just a single prompt chain. It has a complete lifecycle with storage,
+          adaptive questioning, and retrieval grounding. Another strength is the offline fallback behavior, which makes the demo
+          more dependable. On the limitation side, the current database is SQLite, ingestion is synchronous, and the evaluation
+          heuristics are simpler when OpenAI is unavailable."
+        </p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>14. Closing Script</h2>
+      <div class="say">
+        <strong>What to say</strong>
+        <p>
+          "Overall, InterviewIQ shows how retrieval, personalization, adaptive logic, and structured storage can be combined
+          into a practical interview platform. The main value is that the questions are both candidate-aware and knowledge-grounded,
+          which makes the interview experience more relevant and more explainable."
+        </p>
+      </div>
+      <div class="show">
+        <strong>What to show</strong>
+        <p>End on the summary screen or the repository README, depending on whether you want to finish with product value or code structure.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>15. Recording Checklist</h2>
+      <div class="checklist">
+        <ul>
+          <li>Open app UI before starting the narration.</li>
+          <li>Keep the IDE ready with backend and frontend files.</li>
+          <li>Have one sample resume ready.</li>
+          <li>Mention supported roles clearly.</li>
+          <li>Explain where RAG is used and why.</li>
+          <li>Show at least one endpoint file.</li>
+          <li>Show at least one service file.</li>
+          <li>Show the turn log and summary UI.</li>
+          <li>Call out fallback behavior without API key.</li>
+          <li>End with strengths and future improvements.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

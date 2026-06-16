@@ -191,7 +191,7 @@ export default async (request: Request) => {
     const [resource, maybeId, action] = pathParts(request);
     if (!resource) {
       return json({
-        message: 'RoleRAG Netlify API is running',
+        message: 'InterviewIQ Netlify API is running',
         health: '/api/health',
       });
     }

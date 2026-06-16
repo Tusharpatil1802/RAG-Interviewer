@@ -2,7 +2,7 @@
 
 ## System intent
 
-RoleRAG Interviewer is built as a complete interview lifecycle service rather than a single prompt script. The user journey is intentionally staged: candidate entry, resume/profile extraction, RAG retrieval, question generation, answer capture, answer evaluation, adaptive follow-up, and final summary.
+InterviewIQ is built as a complete interview lifecycle service rather than a single prompt script. The user journey is intentionally staged: candidate entry, resume/profile extraction, RAG retrieval, question generation, answer capture, answer evaluation, adaptive follow-up, and final summary.
 
 ## Components
 

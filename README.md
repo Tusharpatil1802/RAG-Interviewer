@@ -1,6 +1,6 @@
-# RoleRAG Interviewer
+# InterviewIQ
 
-RoleRAG Interviewer is a full-stack technical screening app that combines resume parsing, role-specific retrieval, adaptive question generation, answer evaluation, and interview session traceability.
+InterviewIQ is a full-stack technical screening app that combines resume parsing, role-specific retrieval, adaptive question generation, answer evaluation, and interview session traceability.
 
 The app is designed for AI/ML and backend-style screening flows where the first question is grounded in a candidate's resume and a role-specific knowledge base, and later turns adapt based on the candidate's answers.
 
@@ -33,7 +33,7 @@ The app is designed for AI/ML and backend-style screening flows where the first 
 ## Project Structure
 
 ```text
-RAG Interviewer/
+InterviewIQ/
 ├── backend/
 │   ├── app/
 │   │   ├── api/
@@ -122,7 +122,7 @@ The frontend starts on `http://localhost:5173`.
 Create `backend/.env` if you want to override defaults:
 
 ```env
-APP_NAME=RoleRAG Interviewer
+APP_NAME=InterviewIQ
 DATABASE_URL=sqlite:///./interview.db
 CHROMA_DIR=./data/chroma
 UPLOAD_DIR=./data/uploads

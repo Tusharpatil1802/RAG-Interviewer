@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>InterviewIQ - Project Explanation</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #4b5b74;
+      --line: #d7dfeb;
+      --bg: #f6f8fc;
+      --card: #ffffff;
+      --accent: #1d4ed8;
+      --accent-soft: #eaf1ff;
+      --success: #0f766e;
+      --warn: #9a3412;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.55;
+    }
+    .page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 36px 44px 56px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #172033 0%, #1d4ed8 100%);
+      color: #fff;
+      border-radius: 22px;
+      padding: 30px 32px;
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      line-height: 1.1;
+    }
+    .hero p {
+      margin: 0;
+      max-width: 760px;
+      color: rgba(255,255,255,0.92);
+      font-size: 15px;
+    }
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 18px 0 24px;
+    }
+    .meta .card, .section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+    .meta .card {
+      padding: 16px 18px;
+    }
+    .meta .label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .meta strong {
+      font-size: 15px;
+    }
+    .section {
+      padding: 24px 26px;
+      margin-bottom: 18px;
+      page-break-inside: avoid;
+    }
+    h2 {
+      margin: 0 0 14px;
+      font-size: 22px;
+      color: var(--ink);
+    }
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 17px;
+      color: var(--accent);
+    }
+    p {
+      margin: 8px 0;
+    }
+    ul, ol {
+      margin: 10px 0 10px 22px;
+      padding: 0;
+    }
+    li { margin: 6px 0; }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .pill {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid #bfd1ff;
+      background: var(--accent-soft);
+      color: #1e3a8a;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .note, .good, .risk {
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    .note {
+      background: #f8fafc;
+      border: 1px solid #d9e2ee;
+    }
+    .good {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+    }
+    .risk {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      color: #9a3412;
+    }
+    .flow {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .flow-step {
+      background: #f8fbff;
+      border: 1px solid #d6e4ff;
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+    .mono {
+      font-family: Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .table th, .table td {
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .table th {
+      background: #f2f6fd;
+    }
+    @media print {
+      body { background: #fff; }
+      .page { max-width: none; padding: 20px 28px 32px; }
+      .hero, .section, .meta .card { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <section class="hero">
+      <h1>InterviewIQ</h1>
+      <p>
+        Detailed project explanation covering system purpose, architecture, backend and frontend design,
+        RAG pipeline, data flow, APIs, deployment, trade-offs, limitations, and suggested improvements.
+      </p>
+    </section>
+
+    <section class="meta">
+      <div class="card">
+        <span class="label">Project Type</span>
+        <strong>Full-stack RAG interview platform</strong>
+      </div>
+      <div class="card">
+        <span class="label">Core Backend</span>
+        <strong>FastAPI + SQLAlchemy + ChromaDB</strong>
+      </div>
+      <div class="card">
+        <span class="label">Frontend</span>
+        <strong>React + Vite + Axios</strong>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>1. Project Overview</h2>
+      <p>
+        InterviewIQ is a role-aware technical interview application. It starts with a candidate resume,
+        extracts a structured profile, retrieves role-specific knowledge-base content, generates grounded interview
+        questions, evaluates answers, and stores the full session trace.
+      </p>
+      <p>
+        The project is stronger than a single prompt-based demo because it supports a complete interview lifecycle:
+        input collection, retrieval, adaptive questioning, evaluation, session persistence, summary generation, and reset.
+      </p>
+      <div class="pill-row">
+        <span class="pill">Resume-aware</span>
+        <span class="pill">Role-specific RAG</span>
+        <span class="pill">Adaptive follow-up</span>
+        <span class="pill">Turn-level persistence</span>
+        <span class="pill">Summary generation</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>2. Primary Objective</h2>
+      <p>
+        The project solves a simple but important problem: generic interview systems ask shallow questions because they
+        do not understand the candidate or the target role. This system improves relevance by combining two signals:
+      </p>
+      <ol>
+        <li>The candidate's actual resume, parsed into a structured profile.</li>
+        <li>A role-specific knowledge base retrieved through embeddings and vector search.</li>
+      </ol>
+      <p>
+        That combination lets the interviewer ask questions that are both personalized and grounded.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>3. Supported Roles</h2>
+      <ul>
+        <li>AI/ML Engineer</li>
+        <li>Backend Engineer</li>
+        <li>Data Science / Applied ML</li>
+      </ul>
+      <p>
+        Each role maps to its own Chroma collection. This avoids cross-role noise and keeps retrieval focused.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>4. High-Level Architecture</h2>
+      <div class="flow">
+        <div class="flow-step"><strong>Frontend:</strong> Candidate uploads resume, selects role, answers questions, views evaluations and final summary.</div>
+        <div class="flow-step"><strong>API Layer:</strong> FastAPI validates input, orchestrates session creation, answer submission, retrieval, and response formatting.</div>
+        <div class="flow-step"><strong>Resume Service:</strong> Extracts text from PDF/TXT and creates a structured profile using OpenAI when available, with deterministic fallback parsing.</div>
+        <div class="flow-step"><strong>RAG Service:</strong> Ingests documents, chunks them, embeds them, stores vectors, builds queries, retrieves relevant context, and deduplicates results.</div>
+        <div class="flow-step"><strong>LLM Service:</strong> Generates questions, evaluates answers, and writes a final summary. It also includes fallback logic when no OpenAI API key is configured.</div>
+        <div class="flow-step"><strong>Persistence:</strong> SQLAlchemy stores interview sessions and turn-level trace data in SQLite.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>5. Project Structure</h2>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Path</th>
+            <th>Responsibility</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">backend/app/main.py</td>
+            <td>FastAPI app initialization, CORS setup, router registration, DB startup, health endpoint.</td>
+          </tr>
+          <tr>
+            <td class="mono">backend/app/api/interview.py</td>
+            <td>Interview lifecycle endpoints including KB ingestion, start, answer, summary retrieval, and reset.</td>
+          </tr>
+          <tr>
+            <td class="mono">backend/app/services/resume.py</td>
+            <td>Resume extraction and structured profile parsing.</td>
+          </tr>
+          <tr>
+            <td class="mono">backend/app/services/rag.py</td>
+            <td>Document ingestion, chunking, embedding, collection management, query building, and retrieval.</td>
+          </tr>
+          <tr>
+            <td class="mono">backend/app/services/llm.py</td>
+            <td>Question generation, answer evaluation, session summarization, and fallback behavior.</td>
+          </tr>
+          <tr>
+            <td class="mono">backend/app/models/db.py</td>
+            <td>SQLAlchemy models for interview sessions and turns.</td>
+          </tr>
+          <tr>
+            <td class="mono">backend/app/schemas/interview.py</td>
+            <td>Pydantic response and request schema definitions.</td>
+          </tr>
+          <tr>
+            <td class="mono">frontend/src/App.jsx</td>
+            <td>Main client state orchestration and API interaction.</td>
+          </tr>
+          <tr>
+            <td class="mono">frontend/src/components/*</td>
+            <td>Candidate entry, question UI, progress stepper, evaluation cards, turn log, summary, and error banner.</td>
+          </tr>
+          <tr>
+            <td class="mono">docker-compose.yml</td>
+            <td>Runs backend and frontend together for local containerized execution.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>6. End-to-End Request Flow</h2>
+      <h3>Interview Start</h3>
+      <ol>
+        <li>User uploads a PDF or TXT resume and selects a role.</li>
+        <li>Backend saves the upload under <span class="mono">backend/data/uploads</span>.</li>
+        <li>Resume text is extracted.</li>
+        <li>The extracted text is converted into a profile dictionary.</li>
+        <li>RAG queries are generated from role, skills, projects, and domain hints.</li>
+        <li>Matching context is retrieved from the role-specific Chroma collection.</li>
+        <li>A question is generated using resume profile plus retrieved context.</li>
+        <li>A new DB session row and the first interview turn are stored.</li>
+      </ol>
+      <h3>Answer Submission</h3>
+      <ol>
+        <li>The current pending interview turn is loaded from the database.</li>
+        <li>The answer is validated and evaluated.</li>
+        <li>The turn is updated with the answer and evaluation payload.</li>
+        <li>If max turns are not reached, a new retrieval step runs using the latest answer as extra context.</li>
+        <li>The next question is generated and stored as a fresh pending turn.</li>
+        <li>If max turns are reached, a final session summary is generated and saved.</li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <h2>7. Backend Design</h2>
+      <h3>App Initialization</h3>
+      <p>
+        The FastAPI app reads settings from environment variables, sets CORS, registers the interview router,
+        and creates database tables on startup.
+      </p>
+      <h3>Configuration</h3>
+      <p>
+        Config values include app name, SQLite path, Chroma directory, upload directory, KB directory,
+        embedding model name, OpenAI model, allowed origins, and max turns.
+      </p>
+      <div class="note">
+        Default OpenAI model: <span class="mono">gpt-4o-mini</span><br />
+        Default embedding model: <span class="mono">sentence-transformers/all-MiniLM-L6-v2</span>
+      </div>
+      <h3>API Endpoints</h3>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Endpoint</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">GET /health</td>
+            <td>Simple readiness check.</td>
+          </tr>
+          <tr>
+            <td class="mono">POST /api/kb/ingest</td>
+            <td>Indexes role-specific documents into Chroma.</td>
+          </tr>
+          <tr>
+            <td class="mono">POST /api/interviews/start</td>
+            <td>Starts a session from role + resume upload.</td>
+          </tr>
+          <tr>
+            <td class="mono">POST /api/interviews/{session_id}/answer</td>
+            <td>Stores answer, evaluates it, and returns the next question or done state.</td>
+          </tr>
+          <tr>
+            <td class="mono">GET /api/interviews/{session_id}</td>
+            <td>Returns full session summary including turns and evaluations.</td>
+          </tr>
+          <tr>
+            <td class="mono">POST /api/interviews/{session_id}/reset</td>
+            <td>Deletes prior turns and regenerates a fresh first question for the same session.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>8. Database and Data Model</h2>
+      <div class="grid-2">
+        <div class="note">
+          <h3>InterviewSession</h3>
+          <ul>
+            <li><span class="mono">id</span></li>
+            <li><span class="mono">candidate_name</span></li>
+            <li><span class="mono">role</span></li>
+            <li><span class="mono">resume_text</span></li>
+            <li><span class="mono">extracted_profile</span> as JSON</li>
+            <li><span class="mono">summary</span></li>
+            <li><span class="mono">created_at</span></li>
+          </ul>
+        </div>
+        <div class="note">
+          <h3>InterviewTurn</h3>
+          <ul>
+            <li><span class="mono">id</span></li>
+            <li><span class="mono">session_id</span></li>
+            <li><span class="mono">question</span></li>
+            <li><span class="mono">answer</span></li>
+            <li><span class="mono">retrieved_context</span> as JSON</li>
+            <li><span class="mono">evaluation</span> as JSON</li>
+            <li><span class="mono">created_at</span></li>
+          </ul>
+        </div>
+      </div>
+      <p>
+        This structure is important because it preserves the complete evidence trail for each interview step.
+        The system can always show which sources grounded a question and how an answer was evaluated.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>9. Resume Parsing Logic</h2>
+      <p>
+        The resume parser first extracts raw text from a PDF or TXT file. It then tries to build a structured candidate profile.
+      </p>
+      <h3>LLM-first Path</h3>
+      <ul>
+        <li>Uses OpenAI if <span class="mono">OPENAI_API_KEY</span> is present.</li>
+        <li>Requests JSON with name, contacts, skills, years of experience, domains, projects, seniority, and summary.</li>
+      </ul>
+      <h3>Fallback Path</h3>
+      <ul>
+        <li>Normalizes lines and detects common resume sections.</li>
+        <li>Extracts possible name, emails, phone numbers, years of experience, project bullets, and skill categories.</li>
+        <li>Infers domains such as backend, AI/ML, frontend, and cloud/devops from keyword presence.</li>
+      </ul>
+      <div class="good">
+        Strength: the project still works without an API key, which makes the demo much more reliable.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>10. RAG Pipeline</h2>
+      <h3>Ingestion</h3>
+      <ol>
+        <li>Load role-specific PDFs, TXT files, and Markdown files from <span class="mono">backend/data/kb_docs</span>.</li>
+        <li>Extract text from each file.</li>
+        <li>Split text into chunks of about 950 words with 160-word overlap.</li>
+        <li>Embed chunks using <span class="mono">all-MiniLM-L6-v2</span>.</li>
+        <li>Store them in persistent Chroma collections keyed by role.</li>
+      </ol>
+      <h3>Retrieval</h3>
+      <ol>
+        <li>Build multiple queries from role, skills, projects, domains, experience level, and the previous answer.</li>
+        <li>Query the correct collection for each prompt.</li>
+        <li>Collect document text, metadata, and vector distance.</li>
+        <li>Deduplicate chunks by source and chunk id.</li>
+        <li>Return the top few unique context blocks.</li>
+      </ol>
+      <div class="note">
+        The system stores metadata like source document name, role, and chunk number so the UI can display question grounding.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>11. LLM Service Behavior</h2>
+      <h3>Question Generation</h3>
+      <p>
+        Question prompts include candidate role, experience level, skills, projects, resume highlights,
+        retrieved context, prior questions, latest answer, and current turn number. The prompt specifically instructs
+        the model to ask one practical, non-generic, non-repeated question.
+      </p>
+      <h3>Fallback Questions</h3>
+      <p>
+        If the OpenAI client is unavailable or fails, the system uses deterministic templates. These templates
+        still try to reference project names, role-specific concepts, trade-offs, debugging, monitoring, and deployment concerns.
+      </p>
+      <h3>Answer Evaluation</h3>
+      <p>
+        With OpenAI enabled, the answer is scored and summarized as JSON. Without it, the fallback evaluator checks depth,
+        examples, trade-offs, and debugging signals to produce a score plus strengths, gaps, and a suggested follow-up.
+      </p>
+      <h3>Final Summary</h3>
+      <p>
+        At the end of the interview, the system creates a narrative summary of overall signal, strengths, risks,
+        follow-up areas, and hiring recommendation. There is also a fallback summary mode when the LLM is unavailable.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>12. Frontend Design</h2>
+      <p>
+        The frontend is a single-page React interface built around interview state rather than routing.
+      </p>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Role in UI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mono">CandidateEntry</td>
+            <td>Role selector and resume upload form for starting the session.</td>
+          </tr>
+          <tr>
+            <td class="mono">InterviewQuestion</td>
+            <td>Current question, source grounding, answer box, and submit button.</td>
+          </tr>
+          <tr>
+            <td class="mono">Stepper</td>
+            <td>Turn progress visual for the interview lifecycle.</td>
+          </tr>
+          <tr>
+            <td class="mono">TurnLog</td>
+            <td>Shows extracted profile, source documents, previous questions, answers, and evaluation cards.</td>
+          </tr>
+          <tr>
+            <td class="mono">EvaluationCard</td>
+            <td>Displays score, strengths, gaps, and follow-up advice.</td>
+          </tr>
+          <tr>
+            <td class="mono">SummaryView</td>
+            <td>Final narrative summary and average score after all turns are completed.</td>
+          </tr>
+          <tr>
+            <td class="mono">ErrorBanner</td>
+            <td>Displays backend validation or runtime errors to the user.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p>
+        The frontend also computes a running average score from completed turns and displays it while the interview progresses.
+      </p>
+    </section>
+
+    <section class="section">
+      <h2>13. Deployment and Runtime</h2>
+      <h3>Local Development</h3>
+      <ul>
+        <li>Backend served with <span class="mono">uvicorn app.main:app --reload</span></li>
+        <li>Frontend served with <span class="mono">npm run dev</span></li>
+      </ul>
+      <h3>Docker</h3>
+      <ul>
+        <li>Backend container uses Python 3.11 slim.</li>
+        <li>Frontend container uses Node 20 Alpine.</li>
+        <li><span class="mono">docker-compose.yml</span> exposes backend on port 8000 and frontend on port 5173.</li>
+        <li>Backend data is mounted so uploads and Chroma persistence survive container restarts.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>14. Strengths of the Current Implementation</h2>
+      <ul>
+        <li>Clear separation between API, services, schemas, models, and UI components.</li>
+        <li>Useful fallback behavior without depending completely on external APIs.</li>
+        <li>Role-specific retrieval strategy is simple and easy to explain.</li>
+        <li>Turn-level traceability makes the project auditable and demo-friendly.</li>
+        <li>Reset flow is practical for repeated demo recordings.</li>
+        <li>The system returns grounding sources to the frontend, which improves explainability.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>15. Current Limitations and Risks</h2>
+      <ul>
+        <li>Database is SQLite, which is fine for local demos but limited for production concurrency.</li>
+        <li>Knowledge-base ingestion runs inline, which may be slow for large document sets.</li>
+        <li>No authentication, user accounts, or admin workflows are implemented.</li>
+        <li>There is no advanced observability for retrieval quality, latency, or prompt usage.</li>
+        <li>Document freshness and embedding invalidation are not handled yet.</li>
+        <li>Fallback evaluation is heuristic, so it is less nuanced than model-based evaluation.</li>
+      </ul>
+      <div class="risk">
+        The project is strong as a prototype and assignment submission, but production-readiness would require better security,
+        async/background processing, more monitoring, and a more robust database layer.
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>16. Suggested Future Improvements</h2>
+      <ul>
+        <li>Replace SQLite with PostgreSQL.</li>
+        <li>Add async or background ingestion for large PDFs.</li>
+        <li>Support richer file types and document version tracking.</li>
+        <li>Add retrieval metrics and prompt tracing.</li>
+        <li>Introduce role rubrics and interviewer configuration panels.</li>
+        <li>Add downloadable candidate reports.</li>
+        <li>Add admin dashboards and authentication.</li>
+      </ul>
+    </section>
+
+    <section class="section">
+      <h2>17. Final Summary</h2>
+      <p>
+        InterviewIQ is a solid full-stack RAG application because it combines retrieval, personalization,
+        adaptive questioning, structured evaluation, and persistent session storage into one coherent workflow.
+      </p>
+      <p>
+        The strongest story to tell about this project is not just that it uses RAG, but that it uses RAG in a way that
+        improves interview quality: resume-aware inputs, role-specific grounding, adaptive follow-up, and a retained evidence trail.
+      </p>
+    </section>
+  </div>
+</body>
+</html>
